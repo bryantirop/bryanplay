@@ -1,0 +1,8 @@
+#ifndef test_h
+#define test_h
+
+extern void player_init();
+extern void play_playlist();
+extern void add_media(char *);
+
+#endif

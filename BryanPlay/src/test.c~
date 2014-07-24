@@ -1,0 +1,13 @@
+#include "test.h"
+#include <stdlib.h>
+
+int main(void)
+{
+	
+	player_init();
+	playlist_add_media("aintitfun.mp3");
+	play_playlist();
+	
+
+	return 0;
+}

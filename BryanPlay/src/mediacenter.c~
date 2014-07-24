@@ -1,0 +1,227 @@
+/* The main control system for bryanplay */
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include <vlc/vlc.h>
+
+libvlc_instance_t *vlc;
+libvlc_media_list_t *playlist;
+libvlc_media_list_player_t *playlist_player;
+libvlc_media_player_t *playerObj;
+libvlc_media_t *media, *current_media;
+
+void init()
+{
+	vlc = libvlc_new(0,NULL);
+	playlist = libvlc_media_list_new(vlc);
+	playlist_player = libvlc_media_list_player_new(vlc);
+	playerObj = libvlc_media_player_new(vlc);
+	
+	libvlc_media_list_player_set_media_list(playlist_player,playlist);
+	libvlc_media_list_player_set_media_player(playlist_player,playerObj);
+}
+
+void set_video_panel_x(uint32_t drawable)
+{
+	libvlc_media_player_set_xwindow(playerObj,drawable);
+}
+
+void set_video_panel_hwnd(uint32_t panel)
+{
+	libvlc_media_player_set_hwnd(playerObj,panel);
+}
+
+
+void add_media(char * filepath)
+{
+	media = libvlc_media_new_path(vlc,filepath);
+	libvlc_media_list_add_media(playlist,media);
+}
+
+void play_playlist()
+{
+	libvlc_media_list_player_play(playlist_player);
+	
+	while(1) sleep(200);
+}
+
+void refresh_current_media()
+{
+	current_media = libvlc_media_player_get_media(playerObj);	
+}
+
+void player_pause()
+{
+	libvlc_media_list_player_pause(playlist_player);
+}
+
+void play_next()
+{
+	libvlc_media_list_player_next(playlist_player);
+}
+
+void play_previous()
+{
+	libvlc_media_list_player_previous(playlist_player);
+}
+
+void player_stop()
+{
+	libvlc_media_list_player_stop(playlist_player);
+}
+
+void play_item(int index)
+{
+	libvlc_media_list_player_play_item_at_index(playlist_player,index);
+}
+
+void set_volume(int volume)
+{
+	libvlc_audio_set_volume(playerObj,volume);
+}
+int get_volume()
+{
+	return libvlc_audio_get_volume(playerObj);
+}
+
+void set_mute()
+{
+	libvlc_audio_toggle_mute(playerObj);
+}
+int is_media_seekable()
+{
+	return libvlc_media_player_is_seekable(playerObj);
+}
+void seek_time(uint32_t time)
+{
+	libvlc_media_player_set_time(playerObj,time);
+}
+
+long get_media_time()
+{
+	return libvlc_media_player_get_time(playerObj);
+}
+
+uint64_t get_media_length()
+{
+	refresh_current_media();
+	current_media = libvlc_media_player_get_media(playerObj);
+	libvlc_media_parse(media);
+	
+	return libvlc_media_get_duration(media);
+}
+
+void set_play_mode(short mode)
+{
+	switch(mode)
+	{
+		case 0:
+			libvlc_media_list_player_set_playback_mode(playlist_player,libvlc_playback_mode_default);
+			break;
+		case 1:
+			libvlc_media_list_player_set_playback_mode(playlist_player,libvlc_playback_mode_loop);
+			break;
+		case 2:
+			libvlc_media_list_player_set_playback_mode(playlist_player,libvlc_playback_mode_repeat);
+			break;
+		default:
+		;	
+	}
+
+}
+
+/* get metadata */
+
+char * get_current_title()
+{
+	libvlc_media_parse_async(current_media);
+	
+	char *title = libvlc_media_get_meta(current_media,libvlc_meta_Title);
+	
+	return title;
+}
+
+char * get_current_artist()
+{
+	libvlc_media_parse_async(current_media);
+	
+	char * artist = libvlc_media_get_meta(current_media,libvlc_meta_Artist);
+	
+	return artist;
+}
+
+char * get_current_album()
+{
+	libvlc_media_parse_async(current_media);
+	char * album = libvlc_media_get_meta(current_media,libvlc_meta_Album);
+	
+	return album;
+}
+
+char * get_current_track_number()
+{
+	libvlc_media_parse_async(current_media);
+	char * track = libvlc_media_get_meta(current_media,libvlc_meta_TrackNumber);
+	
+	return track;
+}
+
+char * get_current_artwork_url()
+{
+	libvlc_media_parse_async(current_media);
+	char * art = libvlc_media_get_meta(current_media,libvlc_meta_ArtworkURL);
+	
+	return art;
+}
+
+char * get_current_genre()
+{
+	libvlc_media_parse_async(current_media);
+	char * genre = libvlc_media_get_meta(current_media,libvlc_meta_Genre);
+	
+	return genre;
+}
+
+char * get_current_date()
+{
+	libvlc_media_parse_async(current_media);
+	char * date = libvlc_media_get_meta(current_media,libvlc_meta_Date);
+	
+	return date;
+}
+
+char * get_current_publisher()
+{
+	libvlc_media_parse_async(current_media);
+	char * pub = libvlc_media_get_meta(current_media,libvlc_meta_Publisher);
+	
+	return pub;
+}
+
+char * get_current_copyright()
+{
+	libvlc_media_parse_async(current_media);
+	char * copy = libvlc_media_get_meta(current_media,libvlc_meta_Copyright);
+	
+	return copy;
+}
+
+char * get_current_url()
+{
+	libvlc_media_parse_async(current_media);
+	char * url = libvlc_media_get_meta(current_media,libvlc_meta_URL);
+	
+	return url;
+}
+
+
+/* end of metadata */
+
+
+void media_player_close()
+{
+	libvlc_media_list_player_release(playlist_player);
+}
